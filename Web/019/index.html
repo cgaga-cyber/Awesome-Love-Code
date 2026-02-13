@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -8,14 +9,91 @@
     <meta name="github" content="https://github.com/sun0225SUN/Awesome-Love-Code">
     <meta name="describe" content="收集不易，您的star是我坚持的动力，同时也欢迎各位PR哦! ">
     <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/sun0225SUN/photos/img/20210715233345.png">
-    <link href="css/hovertreewelcome.css" type="text/css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #080510;
+            font-family: Arial, sans-serif;
+        }
+        
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        #hovertreecontainer {
+            position: relative;
+            z-index: 2;
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+            pointer-events: none;
+        }
+        
+        #h1, #h2 {
+            text-shadow: 0 0 10px rgba(255, 64, 129, 0.7);
+            margin: 10px 0;
+        }
+        
+        #h1 {
+            font-size: 3em;
+            color: #ff4081;
+            animation: heartbeat 2s infinite;
+        }
+        
+        #h2 {
+            font-size: 1.8em;
+            color: #ff80ab;
+        }
+        
+        h3 {
+            font-size: 1.5em;
+            color: #ffffff;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .heart {
+            position: absolute;
+            color: #ff4081;
+            font-size: 20px;
+            opacity: 0;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div id="hovertreecontainer">
-
         <div>
-            <h1 id="h1">王希同学</h1>
+            <h1 id="h1">❤ 王希同学 ❤</h1>
             <br>
             <h2 id="h2">祝你情人节快乐</h2>
             <br>
@@ -27,21 +105,135 @@
             <p>&nbsp;</p>
             <p>&nbsp;</p>
         </div>
-
     </div>
+    
+    <!-- 飘落爱心容器 -->
+    <div class="hearts-container"></div>
 
     <canvas id="canvas"></canvas>
     <audio autoplay="autoplay">
         <source src="index_1.html" type="audio/mpeg">
-        您的浏览器不支持播放音乐。请用支持html5的浏览器打开,例如chrome或火狐或者新版IE等。
-
+        您的浏览器不支持播放音乐。请用支持html5的浏览器打开，例如chrome或火狐或者新版IE等。
     </audio>
-    <script type="text/javascript" src="js/hovertreewelcome.js">
-    </script>
+    
     <script type="text/javascript">
+        // 爱心数组和数量
+        var hearts = [];
+        var heartCount = 20;
+        
+        // 爱心类定义
+        function Heart() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 15 + 8;
+            this.speedX = Math.random() * 2 - 1;
+            this.speedY = Math.random() * 2 - 1;
+            this.color = 'hsl(' + Math.random() * 360 + ', 100%, 70%)';
+            this.pulse = 0;
+            this.pulseSpeed = Math.random() * 0.05 + 0.02;
+            this.rotation = Math.random() * Math.PI * 2;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+        }
+        
+        // 绘制爱心的方法
+        Heart.prototype.draw = function() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation);
+            var scale = 1 + Math.sin(this.pulse) * 0.3;
+            ctx.scale(scale, scale);
+            
+            // 绘制爱心形状
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            
+            // 爱心的数学公式: (x²+y²-1)³ - x²y³ = 0
+            // 使用贝塞尔曲线近似绘制爱心
+            var topCurveHeight = this.size * 0.3;
+            ctx.moveTo(0, this.size * 0.3);
+            
+            // 左上方曲线
+            ctx.bezierCurveTo(
+                -this.size / 2, this.size * 0.3,
+                -this.size / 2, 0,
+                0, 0
+            );
+            
+            // 右上方曲线
+            ctx.bezierCurveTo(
+                this.size / 2, 0,
+                this.size / 2, this.size * 0.3,
+                0, this.size * 0.3
+            );
+            
+            // 底部形成V形
+            ctx.lineTo(0, this.size * 0.7);
+            ctx.lineTo(-this.size * 0.2, this.size * 0.5);
+            ctx.lineTo(0, this.size * 0.3);
+            
+            ctx.fill();
+            
+            // 添加爱心内部高光
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(-this.size * 0.1, this.size * 0.15, this.size * 0.1, this.size * 0.08, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        };
+        
+        Heart.prototype.update = function() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.pulse += this.pulseSpeed;
+            this.rotation += this.rotationSpeed;
+            
+            // 边界检测
+            if (this.x < -30) this.x = canvas.width + 30;
+            if (this.x > canvas.width + 30) this.x = -30;
+            if (this.y < -30) this.y = canvas.height + 30;
+            if (this.y > canvas.height + 30) this.y = -30;
+            
+            // 鼠标吸引效果
+            var dx = target.x - this.x;
+            var dy = target.y - this.y;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 200) {
+                this.x += dx * 0.015;
+                this.y += dy * 0.015;
+            }
+        };
 
+        // 创建飘落的爱心
+        function createFallingHearts() {
+            const container = document.querySelector('.hearts-container');
+            
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.innerHTML = '❤';
+                heart.className = 'heart';
+                
+                // 随机位置和动画
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heart.style.color = `hsl(${Math.random() * 360}, 100%, 65%)`;
+                heart.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                heart.style.animationDelay = Math.random() * 2 + 's';
+                
+                container.appendChild(heart);
+                
+                // 移除爱心元素
+                setTimeout(() => {
+                    if (heart.parentNode) {
+                        heart.parentNode.removeChild(heart);
+                    }
+                }, 7000);
+            }, 500);
+        }
+    </script>
+    
+    <script type="text/javascript">
         ; (function (window) {
-
             var ctx,
                 hue,
                 logo,
@@ -69,11 +261,9 @@
             }
 
             Oscillator.prototype = (function () {
-
                 var value = 0;
 
                 return {
-
                     init: function (options) {
                         this.phase = options.phase || 0;
                         this.offset = options.offset || 0;
@@ -91,7 +281,6 @@
                         return value;
                     }
                 };
-
             })();
 
             // ========================================================================================
@@ -103,7 +292,6 @@
             }
 
             Tendril.prototype = (function () {
-
                 function Node() {
                     this.x = 0;
                     this.y = 0;
@@ -112,25 +300,20 @@
                 }
 
                 return {
-
                     init: function (options) {
-
                         this.spring = options.spring + (Math.random() * 0.1) - 0.05;
                         this.friction = settings.friction + (Math.random() * 0.01) - 0.005;
                         this.nodes = [];
 
                         for (var i = 0, node; i < settings.size; i++) {
-
                             node = new Node();
                             node.x = target.x;
                             node.y = target.y;
-
                             this.nodes.push(node);
                         }
                     },
 
                     update: function () {
-
                         var spring = this.spring,
                             node = this.nodes[0];
 
@@ -138,11 +321,9 @@
                         node.vy += (target.y - node.y) * spring;
 
                         for (var prev, i = 0, n = this.nodes.length; i < n; i++) {
-
                             node = this.nodes[i];
 
                             if (i > 0) {
-
                                 prev = this.nodes[i - 1];
 
                                 node.vx += (prev.x - node.x) * spring;
@@ -155,13 +336,11 @@
                             node.vy *= this.friction;
                             node.x += node.vx;
                             node.y += node.vy;
-
                             spring *= settings.tension;
                         }
                     },
 
                     draw: function () {
-
                         var x = this.nodes[0].x,
                             y = this.nodes[0].y,
                             a, b;
@@ -170,30 +349,25 @@
                         ctx.moveTo(x, y);
 
                         for (var i = 1, n = this.nodes.length - 2; i < n; i++) {
-
                             a = this.nodes[i];
                             b = this.nodes[i + 1];
                             x = (a.x + b.x) * 0.5;
                             y = (a.y + b.y) * 0.5;
-
                             ctx.quadraticCurveTo(a.x, a.y, x, y);
                         }
 
                         a = this.nodes[i];
                         b = this.nodes[i + 1];
-
                         ctx.quadraticCurveTo(a.x, a.y, b.x, b.y);
                         ctx.stroke();
                         ctx.closePath();
                     }
                 };
-
             })();
 
             // ----------------------------------------------------------------------------------------
 
             function init(event) {
-
                 document.removeEventListener('mousemove', init);
                 document.removeEventListener('touchstart', init);
 
@@ -207,11 +381,9 @@
             }
 
             function reset() {
-
                 tendrils = [];
 
                 for (var i = 0; i < settings.trails; i++) {
-
                     tendrils.push(new Tendril({
                         spring: 0.45 + 0.025 * (i / settings.trails)
                     }));
@@ -219,19 +391,22 @@
             }
 
             function loop() {
-
                 if (!ctx.running) return;
 
                 ctx.globalCompositeOperation = 'source-over';
-                ctx.fillStyle = 'rgba(8,5,16,0.4)';
+                ctx.fillStyle = 'rgba(8, 5, 16, 0.4)';
                 ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.strokeStyle = 'hsla(' + Math.round(hue.update()) + ',90%,50%,0.25)';
-                ctx.lineWidth = 1;
-
-                if (ctx.frame % 60 == 0) {
-                    console.log(hue.update(), Math.round(hue.update()), hue.phase, hue.offset, hue.frequency, hue.amplitude);
+                
+                // 更新和绘制爱心
+                for (var i = 0; i < hearts.length; i++) {
+                    hearts[i].update();
+                    hearts[i].draw();
                 }
+                
+                // 原有藤蔓效果
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.strokeStyle = 'hsla(' + Math.round(hue.update()) + ', 90%, 50%, 0.25)';
+                ctx.lineWidth = 1;
 
                 for (var i = 0, tendril; i < settings.trails; i++) {
                     tendril = tendrils[i];
@@ -240,13 +415,19 @@
                 }
 
                 ctx.frame++;
-                ctx.stats.update();
+                if (ctx.stats) ctx.stats.update();
                 requestAnimFrame(loop);
             }
 
             function resize() {
                 ctx.canvas.width = window.innerWidth;
                 ctx.canvas.height = window.innerHeight;
+                
+                // 重置爱心位置以适应新的画布大小
+                for (var i = 0; i < hearts.length; i++) {
+                    if (hearts[i].x > ctx.canvas.width) hearts[i].x = ctx.canvas.width * Math.random();
+                    if (hearts[i].y > ctx.canvas.height) hearts[i].y = ctx.canvas.height * Math.random();
+                }
             }
 
             function start() {
@@ -265,7 +446,7 @@
                     target.x = event.touches[0].pageX;
                     target.y = event.touches[0].pageY;
                 } else {
-                    target.x = event.clientX
+                    target.x = event.clientX;
                     target.y = event.clientY;
                 }
                 event.preventDefault();
@@ -279,18 +460,25 @@
             }
 
             function keyup(event) {
-
                 switch (event.keyCode) {
-                    case 32:
+                    case 32: // 空格键
                         save();
                         break;
-                    default:
-                    // console.log(event.keyCode); hovertree.com
+                    case 72: // H键 - 添加更多爱心
+                        for (var i = 0; i < 5; i++) {
+                            hearts.push(new Heart());
+                        }
+                        break;
+                    case 67: // C键 - 清除所有爱心
+                        hearts = [];
+                        for (var i = 0; i < heartCount; i++) {
+                            hearts.push(new Heart());
+                        }
+                        break;
                 }
             }
 
             function letters(id) {
-
                 var el = document.getElementById(id),
                     letters = el.innerHTML.replace('&amp;', '&').split(''),
                     heading = '';
@@ -307,9 +495,7 @@
             }
 
             function save() {
-
                 if (!buffer) {
-
                     buffer = document.createElement('canvas');
                     buffer.width = screen.availWidth;
                     buffer.height = screen.availHeight;
@@ -341,24 +527,31 @@
                 );
 
                 window.open(buffer.toDataURL(), 'wallpaper', 'top=0,left=0,width=' + buffer.width + ',height=' + buffer.height);
-
-                // form.input.value = buffer.toDataURL().substr(22);
-                // form.submit(); hovertree.com
             }
 
             window.requestAnimFrame = (function () {
-                return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (fn) { window.setTimeout(fn, 1000 / 60) };
+                return window.requestAnimationFrame || 
+                       window.webkitRequestAnimationFrame || 
+                       window.mozRequestAnimationFrame || 
+                       function (fn) { window.setTimeout(fn, 1000 / 60) };
             })();
 
             window.onload = function () {
-
-                ctx = document.getElementById('canvas').getContext('2d');
-                ctx.stats = new Stats();
+                canvas = document.getElementById('canvas');
+                ctx = canvas.getContext('2d');
                 ctx.running = true;
                 ctx.frame = 1;
 
+                // 初始化爱心
+                for (var i = 0; i < heartCount; i++) {
+                    hearts.push(new Heart());
+                }
+                
+                // 创建飘落的爱心
+                createFallingHearts();
+
                 logo = new Image();
-                logo.src = 'ht' + 'tp://ho' + 'vertree.c' + 'om/themes/hvtimages/hvtlogo.p' + 'ng';
+                logo.src = 'https://hovertree.com/themes/hvtimages/hvtlogo.png';
 
                 hue = new Oscillator({
                     phase: Math.random() * Math.TWO_PI,
@@ -379,29 +572,55 @@
                 window.addEventListener('blur', stop);
 
                 resize();
+                start();
+
+                // 添加鼠标点击生成爱心的功能
+                document.addEventListener('click', function(e) {
+                    for (var i = 0; i < 3; i++) {
+                        var heart = new Heart();
+                        heart.x = e.clientX + (Math.random() - 0.5) * 50;
+                        heart.y = e.clientY + (Math.random() - 0.5) * 50;
+                        heart.color = 'hsl(' + (Math.random() * 60 + 300) + ', 100%, 70%)'; // 粉色系
+                        heart.size = Math.random() * 20 + 15;
+                        hearts.push(heart);
+                    }
+                });
 
                 if (window.DEBUG) {
-
                     var gui = new dat.GUI();
-
-                    // gui.add(settings, 'debug');
-                    settings.gui.add(settings, 'trails', 1, 30).onChange(reset);
-                    settings.gui.add(settings, 'size', 25, 75).onFinishChange(reset);
-                    settings.gui.add(settings, 'friction', 0.45, 0.55).onFinishChange(reset);
-                    settings.gui.add(settings, 'dampening', 0.01, 0.4).onFinishChange(reset);
-                    settings.gui.add(settings, 'tension', 0.95, 0.999).onFinishChange(reset);
-
-                    document.body.appendChild(ctx.stats.domElement);
+                    settings.gui = gui;
+                    
+                    gui.add(settings, 'trails', 1, 30).onChange(reset);
+                    gui.add(settings, 'size', 25, 75).onFinishChange(reset);
+                    gui.add(settings, 'friction', 0.45, 0.55).onFinishChange(reset);
+                    gui.add(settings, 'dampening', 0.01, 0.4).onFinishChange(reset);
+                    gui.add(settings, 'tension', 0.95, 0.999).onFinishChange(reset);
+                    
+                    // 爱心控制
+                    var heartFolder = gui.addFolder('爱心设置');
+                    heartFolder.add(window, 'heartCount', 5, 50).name('爱心数量').onChange(function() {
+                        hearts = [];
+                        for (var i = 0; i < heartCount; i++) {
+                            hearts.push(new Heart());
+                        }
+                    });
+                    heartFolder.open();
+                    
+                    // 添加性能监控
+                    if (typeof Stats !== 'undefined') {
+                        ctx.stats = new Stats();
+                        ctx.stats.showPanel(0);
+                        document.body.appendChild(ctx.stats.domElement);
+                    }
                 }
             };
-
         })(window);
-
     </script>
+    
     <div style="display:none">
         <script>
             var _hmt = _hmt || [];
-            (function () {
+            (function() {
                 var hm = document.createElement("script");
                 hm.src = "https://hm.baidu.com/hm.js?3568997ab3a480640571c3fd2c7a949b";
                 var s = document.getElementsByTagName("script")[0];
@@ -410,42 +629,4 @@
         </script>
     </div>
 </body>
-<!-- 飘落爱心容器 -->
-<div class="hearts-container"></div>
-
-<style>
-.hearts-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.heart {
-    position: absolute;
-    color: #ff4081;
-    font-size: 20px;
-    animation: fall linear infinite;
-    opacity: 0.7;
-}
-
-@keyframes fall {
-    to {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-    }
-}
-
-@keyframes heartbeat {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.heart-beat {
-    animation: heartbeat 1s infinite;
-}
-</style>
 </html>
